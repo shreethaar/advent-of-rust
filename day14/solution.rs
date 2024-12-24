@@ -1,103 +1,53 @@
-use std::error::Error;
 use std::fmt;
 
-#[derive(Debug)]
-pub enum ParseError {
-    NoName,
-    NoGoodDeeds,
-    NoBadDeeds,
-    InvalidGoodDeeds,
-    InvalidBadDeeds,
-}
-
-impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ParseError::NoName => write!(f, "Name field is missing"),
-            ParseError::NoGoodDeeds => write!(f, "Good deeds field is missing"),
-            ParseError::NoBadDeeds => write!(f, "Bad deeds field is missing"),
-            ParseError::InvalidGoodDeeds => write!(f, "Good deeds value is invalid"),
-            ParseError::InvalidBadDeeds => write!(f, "Bad deeds value is invalid"),
-        }
-    }
-}
-
-impl Error for ParseError {}
-
-pub struct Kid {
+pub struct KidsGift {
     pub name: String,
-    pub niceness: Niceness,
 }
 
-impl Kid {
-    pub fn new(name: String, good_deeds: u32, bad_deeds: u32) -> Kid {
-        let niceness = if Self::is_nice(good_deeds, bad_deeds) {
-            Niceness::Nice(good_deeds)
-        } else {
-            Niceness::Naughty
-        };
+pub struct ElvesGift {
+    pub name: String,
+}
 
-        Kid { name, niceness }
-    }
+pub struct ReindeerGift {
+    pub name: String,
+}
 
-    pub fn parse_row(csv_row: &str) -> Result<Kid, ParseError> {
-        let mut fields = csv_row.split(',');
-        let name = fields
-            .next()
-            .ok_or(ParseError::NoName)?
-            .trim()
-            .to_string();
-        if name.is_empty() {
-            return Err(ParseError::NoName);
-        }
 
-        let good_deeds = fields
-            .next()
-            .ok_or(ParseError::NoGoodDeeds)?
-            .trim()
-            .parse::<u32>()
-            .map_err(|_| {
-                if fields.next().unwrap_or("").trim().is_empty() {
-                    ParseError::NoGoodDeeds
-                } else {
-                    ParseError::InvalidGoodDeeds
-                }
-            })?;
-        let bad_deeds = fields
-            .next()
-            .ok_or(ParseError::NoBadDeeds)?
-            .trim()
-            .parse::<u32>()
-            .map_err(|_| {
-                if fields.next().unwrap_or("").trim().is_empty() {
-                    ParseError::NoBadDeeds
-                } else {
-                    ParseError::InvalidBadDeeds
-                }
-            })?;
-
-        Ok(Kid::new(name, good_deeds, bad_deeds))
-    }
-
-    pub fn is_nice(good_deeds: u32, bad_deeds: u32) -> bool {
-        if good_deeds == 0 && bad_deeds == 0 {
-            return false;
-        }
-
-        let good_deeds = good_deeds as f32 * GOOD_WEIGHT;
-        let bad_deeds = bad_deeds as f32 * BAD_WEIGHT;
-
-        let ratio = good_deeds / (good_deeds + bad_deeds);
-
-        ratio >= 0.75
+impl fmt::Display for KidsGift {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Kid's Gift: {}", self.name)
     }
 }
 
-pub const GOOD_WEIGHT: f32 = 1.0;
-pub const BAD_WEIGHT: f32 = 2.0;
+impl fmt::Display for ElvesGift {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Elf's Gift: {}", self.name)
+    }
+}
 
-#[derive(Debug, PartialEq)]
-pub enum Niceness {
-    Nice(u32),
-    Naughty,
+impl fmt::Display for ReindeerGift {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Reindeer's Gift: {}", self.name)
+    }
+}
+
+// Update display_gift to accept any type that implements Display
+pub fn display_gift(gift: &impl fmt::Display) {
+    println!("{}", gift);
+}
+
+pub fn main() {
+    let kids_gift = KidsGift {
+        name: "toy car".to_string(),
+    };
+    let elves_gift = ElvesGift {
+        name: "vertical monitor".to_string(),
+    };
+    let reindeer_gift = ReindeerGift {
+        name: "carrot".to_string(),
+    };
+
+    display_gift(&kids_gift);
+    display_gift(&elves_gift);
+    display_gift(&reindeer_gift);
 }
